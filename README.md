@@ -108,6 +108,90 @@ All tables are written as **managed Delta tables** in Unity Catalog. After a suc
     └── usage_records
 ```
 
+## Realism Improvements
+
+Known limitations and future enhancements to make the synthetic data more representative of real-world patterns.
+
+### Cross-Cutting
+
+- [ ] Add time-series realism — seasonality, day-of-week patterns, business hours, and event clustering instead of uniform random timestamps
+- [ ] Use heavy-tail (Pareto) entity sampling so a small fraction of entities generate most activity, matching real-world distributions
+- [ ] Introduce slowly changing dimensions — history of plan changes, status transitions, address moves, and tier upgrades over time
+- [ ] Add running balance / ledger reconciliation where applicable (finance accounts, gaming deposits)
+- [ ] Cap fraud probability at 1.0 to avoid semantically invalid values when multiple risk bonuses stack
+
+### Finance
+
+- [ ] Add `daily_account_balances` table — time-series snapshots for liquidity, overdraft, and trend analysis
+- [ ] Add `fraud_cases` table — investigation outcomes, resolution status, and chargeback amounts for supervised ML
+- [ ] Add FX rate table for cross-currency analytics (7 currencies exist but no exchange rates)
+- [ ] Implement velocity-based fraud detection (sliding-window over recent transactions per account) — currently only amount/channel thresholds
+
+### Gaming
+
+- [ ] Correlate VIP tier with actual spend — currently derived from an independent activity score
+- [ ] Align `preferred_game` with actual `game_type` distribution on wagers
+- [ ] Exclude voided/cashed-out wagers from `player_wager_totals` reconciliation
+- [ ] Order wagers chronologically before computing cumulative loss for responsible gaming flags
+- [ ] Add `promotions` / `bonuses` table with campaign IDs, wagering requirements, and terms
+
+### Health
+
+- [ ] Extend visit hours past 19:00 for night ER and urgent care
+- [ ] Add CPT/HCPCS procedure codes alongside ICD-10 diagnoses
+- [ ] Model deductible, copay, and annual out-of-pocket maximum instead of flat `cost * (1 - coverage%)`
+- [ ] Add `prescriptions` table — medication, dose, days supply, refill count (currently a single nullable string per visit)
+- [ ] Add `payers` / `plans` dimension — plan ID, network, deductible, effective dates
+- [ ] Link follow-up visits to prior encounters for longitudinal episode modeling
+
+### Insurance
+
+- [ ] Cap `claim_amount` at `coverage_amount` or model sublimits
+- [ ] Distinguish policy period, report date, and occurrence date for claims on non-active policies
+- [ ] Fix `days_to_resolve` to use business days (documented as such, but generated as calendar days)
+- [ ] Replace `hash()`-based adjuster IDs with deterministic surrogate keys
+- [ ] Differentiate life insurance products (term vs whole, mortality tables, beneficiaries) from P&C
+- [ ] Add `coverage_items` table — per-peril limits and deductibles (comp vs collision, dwelling vs personal property)
+- [ ] Add `catastrophe_events` table for correlated property losses by region
+
+### Manufacturing
+
+- [ ] Correlate defect rate with equipment age, efficiency, and maintenance state
+- [ ] Enforce temporal consistency — order `start_date` must be after equipment `install_date`
+- [ ] Anchor `next_maintenance_date` relative to `NOW` so it is always in the future for operational equipment
+- [ ] Use equipment-type-specific capacity instead of a single 450 min/day constant
+- [ ] Add `quality_inspections` table — sample-based results, inspector, pass/fail, root cause
+- [ ] Add `shift_calendar` table — plant, date, shift, crew, planned hours for capacity utilization
+- [ ] Add `inventory` / `wip_snapshots` for raw material consumption and throughput modeling
+
+### Retail
+
+- [ ] Fix geography — Boise appears under both Pacific Northwest and Mountain West
+- [ ] Model refund amounts on returned orders (currently `total_amount` stays positive)
+- [ ] Add `promotions` / `coupon_redemptions` table — campaign ID, promo code, discount type, dates
+- [ ] Add `dim_store` table — store ID, location, type, square footage for omnichannel analytics
+- [ ] Add customer–product affinity so repeat purchases reflect preferences
+
+### Telecom
+
+- [ ] Set `call_result` to NULL or a type-appropriate value for non-voice records (currently always "Completed")
+- [ ] Set `data_usage_mb` to 0 or NULL for SMS/MMS instead of small exponential noise
+- [ ] Make churn probability depend on experienced latency, dropped calls, and overage charges — not just plan tier and tenure
+- [ ] Add `plans` dimension with effective dates, features, and pricing for plan migration analysis
+- [ ] Add `network_incidents` table — outage events, duration, affected towers, root cause
+- [ ] Add `support_tickets` table — issue type, resolution time, CSAT score
+
+### Utilities
+
+- [ ] Implement time-of-use pricing logic — vary rate by hour-of-day for TOU rate plans
+- [ ] Make outages reduce usage — currently `had_outage` is independent of `usage_amount`
+- [ ] Model net metering credits for solar export instead of `cost = abs(usage) * rate`
+- [ ] Define explicit interval length (daily vs monthly) for usage records
+- [ ] Correlate `peak_demand_kw` with interval usage instead of independent log-normal draws
+- [ ] Add `outage_events` table — start/end timestamps, cause, affected zone, SAIDI/SAIFI metrics
+- [ ] Add `billing_periods` / `invoices` table — monthly bills, payment status, arrears
+- [ ] Add `weather_observations` table — station-level hourly data to replace per-reading synthetic temperature
+
 ## License
 
 This project is provided as-is for demonstration and testing purposes. All generated data is synthetic and contains no real personal information.

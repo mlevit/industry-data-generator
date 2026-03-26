@@ -16,6 +16,7 @@ Designed for analytics, BI, and ML use cases where realistic-looking data is nee
 | **retail**        | `customers`     | ~5K  | `orders`            | 100K–500K | 60+ products across 7 categories, demographics, product-level return rates               |
 | **telecom**       | `subscribers`   | ~5K  | `call_records`      | 100K–500K | Temporal churn dates, network quality metrics (latency/signal), region-correlated towers |
 | **utilities**     | `meters`        | ~5K  | `usage_records`     | 100K–500K | Temperature-driven usage, grid zones, spatially correlated outages                       |
+| **construction**  | `projects`      | ~2K  | `work_orders`       | 100K–500K | 12 project types (bridges, stadiums, tunnels, hospitals), cost overrun modeling, seasonal weather delays, safety incident tracking |
 
 ## Prerequisites
 
@@ -43,7 +44,8 @@ The master notebook drops and recreates the target catalog, then runs each indus
 ├── Manufacturing Dataset Generator.ipynb      # Equipment & production orders
 ├── Retail Dataset Generator.ipynb             # Customers & orders
 ├── Telecom Dataset Generator.ipynb            # Subscribers & call records
-└── Utilities Dataset Generator.ipynb          # Meters & usage records
+├── Utilities Dataset Generator.ipynb          # Meters & usage records
+└── Construction Dataset Generator.ipynb       # Projects & work orders
 ```
 
 ## How It Works
@@ -103,9 +105,12 @@ All tables are written as **managed Delta tables** in Unity Catalog. After a suc
 ├── telecom/
 │   ├── subscribers
 │   └── call_records
-└── utilities/
-    ├── meters
-    └── usage_records
+├── utilities/
+│   ├── meters
+│   └── usage_records
+└── construction/
+    ├── projects
+    └── work_orders
 ```
 
 ## Realism Improvements
@@ -191,6 +196,17 @@ Known limitations and future enhancements to make the synthetic data more repres
 - [ ] Add `outage_events` table — start/end timestamps, cause, affected zone, SAIDI/SAIFI metrics
 - [ ] Add `billing_periods` / `invoices` table — monthly bills, payment status, arrears
 - [ ] Add `weather_observations` table — station-level hourly data to replace per-reading synthetic temperature
+
+### Construction
+
+- [ ] Model construction phase dependencies — enforce that foundation work orders complete before structural steel begins
+- [ ] Correlate safety incidents with weather conditions, crew fatigue (consecutive work days), and project complexity
+- [ ] Add `permits` / `inspections` table — permit applications, approval timelines, inspection scheduling, re-inspection after failures
+- [ ] Add `equipment_rentals` table — crane, excavator, and heavy machinery rental periods, daily rates, utilization
+- [ ] Add `materials_procurement` table — purchase orders, supplier lead times, delivery tracking, price fluctuations
+- [ ] Add `risk_register` table — identified risks, probability, impact, mitigation status, trigger events
+- [ ] Implement cost escalation curves — materials and labor costs increasing over multi-year project timelines
+- [ ] Model subcontractor performance ratings based on historical on-time and on-budget delivery
 
 ## License
 
